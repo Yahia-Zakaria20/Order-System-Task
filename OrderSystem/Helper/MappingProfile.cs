@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using OrderSystem.CoreLayer.Entites;
 using OrderSystem.Dtos;
 using Talabat.Rev.CoreLayer.Entites;
 
@@ -11,7 +12,8 @@ namespace OrderSystem.Helper
         public MappingProfile()
         {
             CreateMap<CustomerBasketDto, CustomerBasket>();
-            CreateMap<BasketItems,BasketItemsDto>().ReverseMap();
+            CreateMap<BasketItems,BasketItemsDto>();
+            CreateMap<ProductDto, Product>();
         }
     }
 }
