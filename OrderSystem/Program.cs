@@ -40,12 +40,12 @@ namespace OrderSystem
 
             var app = webApplicationBuilder.Build();
 
-           var Scope =  app.Services.CreateScope();
+            var Scope =  app.Services.CreateScope();
 
-            var services = Scope.ServiceProvider;
+             var services = Scope.ServiceProvider;
 
-           var dbcontext  =  services.GetRequiredService<ApplicationDbcontext>();
-           var LoggerFactory =   services.GetRequiredService<ILoggerFactory>();
+             var dbcontext  =  services.GetRequiredService<ApplicationDbcontext>();
+             var LoggerFactory =   services.GetRequiredService<ILoggerFactory>();
 
 
             try
@@ -54,9 +54,9 @@ namespace OrderSystem
             }
             catch (Exception ex)
             {
-               var logger =   LoggerFactory.CreateLogger<Program>();
+               var logger = LoggerFactory.CreateLogger<Program>();
 
-                logger.LogError(string.Empty,ex);   
+                logger.LogError(string.Empty,ex.Message);   
             }
           
 
