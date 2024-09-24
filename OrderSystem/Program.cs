@@ -1,8 +1,12 @@
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OrderSystem.Errors;
 using OrderSystem.Middlewares;
+using OrderSystem.RepositoryLayer.Data;
+using StackExchange.Redis;
 
 namespace OrderSystem
 {
@@ -20,29 +24,42 @@ namespace OrderSystem
             webApplicationBuilder.Services.AddEndpointsApiExplorer();
             webApplicationBuilder.Services.AddSwaggerGen();
 
-            webApplicationBuilder.Services.Configure<ApiBehaviorOptions>(option => {
 
-                option.InvalidModelStateResponseFactory = (actiocontext) =>
-                {
+            webApplicationBuilder.Services.AddDbContext<ApplicationDbcontext>(options => 
+            {
+                options.UseSqlServer(webApplicationBuilder.Configuration.GetConnectionString("DefultConnection"));
+            });
 
-                    var errors = actiocontext.ModelState.Where(p => p.Value.Errors.Count() > 0)
-                                                   .SelectMany(e => e.Value.Errors)
-                                                    .Select(p => p.ErrorMessage)
-                                                     .ToList();
+           webApplicationBuilder.Services.ApplicationsServices();
 
-                    var ApiValidationError = new ApiValidationErrorResponse()
-                    {
-                        Errors = errors
-                    };
-
-                    return new BadRequestObjectResult(ApiValidationError);
-                };
-
-
+            webApplicationBuilder.Services.AddSingleton<IConnectionMultiplexer>((options) =>
+            {
+                return ConnectionMultiplexer.Connect(webApplicationBuilder.Configuration.GetConnectionString("Redis"));
             });
             #endregion
 
             var app = webApplicationBuilder.Build();
+
+           var Scope =  app.Services.CreateScope();
+
+            var services = Scope.ServiceProvider;
+
+           var dbcontext  =  services.GetRequiredService<ApplicationDbcontext>();
+           var LoggerFactory =   services.GetRequiredService<ILoggerFactory>();
+
+
+            try
+            {
+                dbcontext.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+               var logger =   LoggerFactory.CreateLogger<Program>();
+
+                logger.LogError(string.Empty,ex);   
+            }
+          
+
 
 
             #region Configer Kestrel Middleware
